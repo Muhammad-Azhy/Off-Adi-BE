@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Books {
+  ID            Int            @id @default(autoincrement())
+  PublisherID   Int
+  Title         String         @db.VarChar(250)
+  AuthorID      Int
+  Narrator      String         @db.VarChar(250)
+  NumberOfPages Int
+  Language      Int
+  Summary       String         @db.VarChar(250)
+  Files         Files[]
+  Author        Author         @relation(fields: [AuthorID], references: [ID])
+  Publisher     Publisher      @relation(fields: [PublisherID], references: [ID])
+  libraries     Library[]
+  FavBooks      FavBooks[]
+  BookRatings   BookRating[]
+  Categories    Category[]
+  Cart          Cart[]
+  ListningTime  ListningTime[]
+}
+
+model Files {
+  ID     Int    @id @default(autoincrement())
+  BookID Int
+  Cover  String @db.VarChar(250)
+  Audio  String @db.VarChar(250)
+  Demo   String @db.VarChar(250)
+  Book   Books  @relation(fields: [BookID], references: [ID], onDelete: Cascade)
+}
+
+model Category {
+  ID   Int     @id @default(autoincrement())
+  Name String  @unique @db.VarChar(50)
+  Book Books[]
+}
+
+model Listeners {
+  ID           Int          @id @default(autoincrement())
+  UserFullName String       @db.VarChar(250)
+  Username     String       @unique @db.VarChar(50)
+  Email        String       @db.VarChar(50)
+  Phone        String       @db.VarChar(15)
+  Password     String       @db.VarChar(50)
+  libraries    Library[]
+  FavBooks     FavBooks[]
+  BookRatings  BookRating[]
+  cart         Cart?
+}
+
+model ListningTime {
+  ID         Int     @id @default(autoincrement())
+  Book       Books   @relation(fields: [BookID], references: [ID])
+  BookID     Int
+  ListenerID Int
+  Time       String  @db.VarChar(50) //time spent on the book
+  Finished   Boolean
+}
+
+model Author {
+  ID             Int     @id @default(autoincrement())
+  AuthorFullName String  @unique @db.VarChar(50)
+  Email          String  @db.VarChar(50)
+  Phone          String  @db.VarChar(15)
+  Books          Books[]
+}
+
+model Library {
+  ID         Int       @id @default(autoincrement())
+  ListenerID Int
+  book       Books[]
+  Listener   Listeners @relation(fields: [ListenerID], references: [ID]) //on delete Cascade????
+}
+
+model FavBooks {
+  ID         Int       @id @default(autoincrement())
+  ListenerID Int
+  BookID     Int
+  Books      Books[]
+  Listener   Listeners @relation(fields: [ListenerID], references: [ID])
+}
+
+model BookRating {
+  ID         Int       @id @default(autoincrement())
+  BookID     Int
+  ReaderID   Int
+  Rating     Int
+  Review     String    @db.VarChar(250)
+  RatingDate DateTime
+  Book       Books     @relation(fields: [BookID], references: [ID])
+  Reader     Listeners @relation(fields: [ReaderID], references: [ID])
+}
+
+model Publisher {
+  ID            Int     @id @default(autoincrement())
+  PublisherName String  @db.VarChar(50)
+  Email         String  @db.VarChar(50)
+  Phone         String  @db.VarChar(15)
+  Website       String  @db.VarChar(50)
+  Books         Books[]
+}
+
+model Cart {
+  ID     Int       @id @default(autoincrement())
+  user   Listeners @relation(fields: [UserID], references: [ID])
+  UserID Int       @unique
+  books  Books[]
+}

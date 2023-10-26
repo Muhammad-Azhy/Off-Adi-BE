@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+     "outDir": "./dist",
+    "module": "CommonJS",
+    "target": "ES2016",
+    "rootDir": "./",
+    "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+  },"include": [
+    "./**/*.ts",
+    "./db/*.json"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
