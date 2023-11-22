@@ -14,7 +14,7 @@ router.post("/ListenTime/:BookID", verifyToken , async (req,res)=>{
     let ListenTime = await prisma.listningTime.findFirst({where:{
         BookID:+BookID,
         ListenerID:myID
-    }})
+    }});
     if(!ListenTime){
         await prisma.listningTime.create({
             data:{
@@ -48,8 +48,14 @@ router.get("/ListenTime/:BookID" , verifyToken ,async (req,res)=>{
         BookID:+BookID,
         ListenerID:myID
     }})
-    if(!ListenTime)
-        return res.send("You have no time on this book")
-    return res.send([ListenTime])
+    if(!ListenTime){
+        await prisma.listningTime.create({
+        data:{Time:"0:00", BookID:+BookID,Finished:false,ListenerID:myID}
+    }).then(x=>{return res.send(x)})
+    }
+    else{
+        return res.send([ListenTime]);
+    }
+    
 })
-export default router
+export default router;

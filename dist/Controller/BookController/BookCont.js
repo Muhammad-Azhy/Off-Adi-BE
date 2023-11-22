@@ -23,6 +23,7 @@ const router = express_1.default.Router();
 router.use(express_1.default.json());
 router.use("/Media", express_1.default.static(path_1.default.join(__dirname, "Media")));
 router.post("/Books", middlewere_1.verifyToken, BookDTO_1.CreateBookMiddlewere, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("HI");
     const decodedToken = req.decodedToken;
     const ID = decodedToken.ID;
     const { PublisherName, Title, Narrator, NumberOfPages, Language, Category, Summary } = req.body;
@@ -126,9 +127,11 @@ router.put("/Books/:BookID", middlewere_1.verifyToken, BookDTO_1.UpdateBookMiddl
 }));
 router.delete("/Books/:BookID", middlewere_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const ID = req.params.BookID;
+    console.log("HIIIII  " + ID);
     const book = yield prisma.books.findFirst({ where: {
             ID: +ID
         } });
+    console.log(book);
     if (!book) {
         return res.send("Book doesn't exist");
     }
@@ -153,7 +156,7 @@ router.get("/Books", middlewere_1.verifyToken, (req, res) => __awaiter(void 0, v
                 Summary: true,
                 Language: true,
                 Narrator: true,
-                listenTime: {
+                ListningTime: {
                     select: {
                         Time: true,
                         BookID: true,
@@ -260,5 +263,44 @@ router.get("/Category/:Name", middlewere_1.verifyToken, (req, res) => __awaiter(
         maxPages,
         books,
     });
+}));
+router.get("/Finished", middlewere_1.verifyToken, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const decodedToken = req.decodedToken;
+        const ID = decodedToken.ID;
+        const listener = yield prisma.listeners.findFirst({ where: { ID: +ID } });
+        if (!listener) {
+            return res.send("Id not valid user not found...");
+        }
+        const BooksPerPage = parseInt(req.query.limit, 10);
+        const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+        const pageNumber = isNaN(page) || page < 1 ? 1 : page;
+        const maxBooks = yield prisma.books.count();
+        const maxPages = Math.ceil(maxBooks / BooksPerPage);
+        const finishedBooks = yield prisma.listningTime.findMany({
+            where: {
+                Finished: true,
+                ListenerID: ID
+            },
+            include: {
+                Book: { select: { ID: true,
+                        Author: { select: { AuthorFullName: true, ID: true } },
+                        Title: true,
+                        Summary: true,
+                        Narrator: true,
+                        Files: { select: { Cover: true, Demo: true, Audio: true } },
+                        ListningTime: { where: {
+                                ListenerID: listener.ID
+                            } }
+                    } },
+            },
+            skip: (pageNumber - 1) * BooksPerPage,
+            take: BooksPerPage,
+        });
+        res.send(finishedBooks);
+    }
+    catch (e) {
+        return res.send("Error getting fav books");
+    }
 }));
 exports.default = router;

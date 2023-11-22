@@ -10,12 +10,16 @@ router.post("/FavBook/:BookID", verifyToken, FavBookMiddlewere , async (req,res)
     const decodedToken = (req as any).decodedToken;
     const ID = decodedToken.ID;
     const BookID = req.params.BookID;
+    console.log(BookID);
+    
     let id :number;
     let favBooks = await prisma.favBooks.findFirst({where:{
         ListenerID:+ID
     }})
     if(!favBooks){
-    await prisma.favBooks.create({
+        console.log("DOESN'T HAVE IT BOOOO");
+
+     await prisma.favBooks.create({
     data:{
         BookID:+BookID,
         ListenerID:+ID,
@@ -23,25 +27,34 @@ router.post("/FavBook/:BookID", verifyToken, FavBookMiddlewere , async (req,res)
             connect:{ID:+BookID}
         }
     }
-    }).then(x =>{
-        id = x.ID
-    })
+    }).then( async x =>{
+        await prisma.favBooks.update({where:{ID:x.ID}, data:{
+            Books:{connect:{ID:+BookID}}
+        }}).then(y=>{return res.send("Book "+BookID+" Added")})
+    });
     }
-    await prisma.favBooks.update({where:{ID:id} , data:{
+    else{
+          await prisma.favBooks.update({where:{ID:favBooks.ID} , data:{
         Books:{connect:{ID:+BookID}}
     }}).then(x =>{
         return res.send(x)
     })
+    }
 })  
 
 router.delete("/FavBook/:BookID" , verifyToken, async (req,res)=>{
-     const decodedToken = (req as any).decodedToken;
+    try{
+
+        const decodedToken = (req as any).decodedToken;
      const ID = decodedToken.ID;
      let id:number;
-    const BookID = req.params.BookID;let favBooks = await prisma.favBooks.findFirst({where:{
+    const BookID = req.params.BookID;
+    let favBooks = await prisma.favBooks.findFirst({where:{
         ListenerID:+ID
     }})
     if(!favBooks){
+        console.log("DOESN'T HAVE IT BOOOO");
+        
     await prisma.favBooks.create({
     data:{
         BookID:+BookID,
@@ -50,16 +63,25 @@ router.delete("/FavBook/:BookID" , verifyToken, async (req,res)=>{
             connect:{ID:+BookID}
         }
     }
-    }).then(x =>{
-        id = x.ID
+    }).then(async x =>{
+        await prisma.favBooks.update({where:{ID:+BookID,ListenerID:ID} , data:{
+        Books:{disconnect:{ID:+BookID}}
+    }}).then(y =>{
+        return res.send("Removed "+BookID+" from fav")
+    })
     })
 
     }
-    await prisma.favBooks.update({where:{ID:id} , data:{
+    
+    await prisma.favBooks.update({where:{ID:favBooks.ID,ListenerID:ID} , data:{
         Books:{disconnect:{ID:+BookID}}
     }}).then(x =>{
-        return res.send(x)
+        return res.send("Removed "+BookID+" from fav")
     })
+        
+    }catch(e){console.log(e);
+     res.send("Error removing book ")}
+     
 })
 
 router.get("/FavBook" , verifyToken,async (req,res)=>{
@@ -74,19 +96,23 @@ router.get("/FavBook" , verifyToken,async (req,res)=>{
         return res.send("You have no fav books...")
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const booksPerPage = parseInt(req.query.limit as string, 10); 
-    const books = await prisma.books.findMany({
-    where:{FavBooks:{every:{ListenerID:listener.ID}}},
-    select: {
-        ID: true,
-        Author: { select: { AuthorFullName: true, ID: true } },
-        Title: true,
-        Narrator: true
-    },
+    const books = await prisma.favBooks.findFirst({where:{ID:favBooks.ID}, select:{
+        Books:{select:
+            {ID:true,
+            Author: { select: { AuthorFullName: true, ID: true } },
+            Title: true,
+            Summary:true,
+            Narrator: true,
+            Files:{select:{Cover:true , Demo:true ,Audio:true}},
+            ListningTime:{where:{
+                ListenerID:listener.ID
+            }, }},
     skip: (page - 1) * booksPerPage,
-    take: booksPerPage
+    take: booksPerPage 
+    }
+}})
+   return res.send(books);
 });
 
-return res.send(books);
 
-})
 export default router;

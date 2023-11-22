@@ -11,6 +11,7 @@ router.use(express.json())
 
 router.use("/Media", express.static(path.join(__dirname, "Media")));
 router.post("/Books",verifyToken,CreateBookMiddlewere,async (req,res)=>{
+  console.log("HI");
   
   const decodedToken = (req as any).decodedToken;
   const ID = decodedToken.ID;
@@ -28,7 +29,7 @@ const publisher = await prisma.publisher.findFirst({
   where: {
     PublisherName
   }
-});
+})
 
 const author = await prisma.author.findFirst({
   where: {
@@ -59,7 +60,8 @@ const author = await prisma.author.findFirst({
         Summary,
       }
     });
-res.send(book);
+  
+res.send(book)
 }) 
 
 router.post("/Files/:BookID", verifyToken , async(req,res)=>{
@@ -72,8 +74,11 @@ router.post("/Files/:BookID", verifyToken , async(req,res)=>{
     if (err) {
       return res.status(500).send('Error uploading files.');
     }
+    
+    
+    
     const audioFile = req.files['audio'][0];
-    const coverFile = req.files['cover'][0]
+    const coverFile = req.files['cover'][0];
     const demoFile = req.files['demo'][0];
     
     if (!audioFile ||  !coverFile || !demoFile) {
@@ -116,7 +121,7 @@ router.post("/Files/:BookID", verifyToken , async(req,res)=>{
     return res.send("Error adding files")
   }
     
-})
+});
 
 router.put("/Books/:BookID", verifyToken,UpdateBookMiddlewere ,async (req,res)=>{
   const {
@@ -132,19 +137,23 @@ if(!book){
 }
 await prisma.books.update({where:{ID:+ID},data:{Narrator , Summary}})
 return res.send("Book Updated...");
-})
+});
 
 router.delete("/Books/:BookID", verifyToken,async (req,res)=>{
+  
 const ID = req.params.BookID
+console.log("HIIIII  "+ID)
 const book = await prisma.books.findFirst({where:{
   ID:+ID
-}})
+}});
+console.log(book);
+
 if(!book){
   return res.send("Book doesn't exist")
 }
 await prisma.books.delete({where:{ID:+ID}})
 return res.send("Book Deleted...")
-})
+});
 
 router.get("/Books", verifyToken , async (req,res)=>{
   try {
@@ -164,7 +173,7 @@ router.get("/Books", verifyToken , async (req,res)=>{
         Summary:true,
         Language:true,
         Narrator:true,
-        listenTime:{
+        ListningTime:{
           select:{
             Time:true,
             BookID:true,
@@ -193,7 +202,7 @@ router.get("/Books", verifyToken , async (req,res)=>{
     console.error("Error getting Books:", err);
     return res.status(500).send("Error getting Books...");
   }
-})
+});
 
 
 router.get("/Books/:BookID", verifyToken , async (req,res)=>{
@@ -277,5 +286,47 @@ router.get("/Category/:Name", verifyToken , async (req,res)=>{
       maxPages,
       books,
     });
+})
+router.get("/Finished", verifyToken , async (req,res)=>{
+  try{
+    const decodedToken = (req as any).decodedToken;
+    const ID = decodedToken.ID;
+    const listener = await prisma.listeners.findFirst({where:{ID:+ID}})
+    if(!listener){
+        return res.send("Id not valid user not found...")
+      }
+    const BooksPerPage = parseInt(req.query.limit as string, 10);
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageNumber = isNaN(page) || page < 1 ? 1 : page;
+    const maxBooks = await prisma.books.count();
+    const maxPages = Math.ceil(maxBooks / BooksPerPage)
+   const finishedBooks = await prisma.listningTime.findMany({
+      where: {
+        Finished: true,
+        ListenerID:ID
+      },
+      include: {
+        Book: 
+          {select:
+            {ID:true,
+            Author: { select: { AuthorFullName: true, ID: true } },
+            Title: true,
+            Summary:true,
+            Narrator: true,
+            Files:{select:{Cover:true , Demo:true ,Audio:true}},
+            ListningTime:{where:{
+                ListenerID:listener.ID
+            }}
+    
+        }},
+      },
+      skip: (pageNumber - 1) * BooksPerPage,
+      take: BooksPerPage,
+      }); 
+      res.send(
+      finishedBooks
+    );
+  } catch(e){return res.send("Error getting fav books")}
+ 
 })
 export default router;

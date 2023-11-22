@@ -49,7 +49,7 @@ export const uploader = multer({ storage: fileStorageEngine }).fields([
   { name: 'audio', maxCount: 1 },
   { name: 'cover', maxCount: 1 },
   { name: 'demo', maxCount: 1 }
-]);
+])
 
 app.get("/GetAll",verifyToken , async (req,res)=>{
   const books = await prisma.books.findMany({
@@ -61,6 +61,7 @@ app.get("/GetAll",verifyToken , async (req,res)=>{
         Summary:true,
         Language:true,
         Narrator:true,
+        NumberOfPages:true,
         Files:{
           select:{Cover:true , Audio:true , Demo:true}
         },

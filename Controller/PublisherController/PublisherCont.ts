@@ -115,4 +115,4 @@ router.get("/Publisher",verifyToken, async (req,res)=>{
     return res.status(500).send("Error getting Publishers...");
   }
 })
-export default router
+export default router;

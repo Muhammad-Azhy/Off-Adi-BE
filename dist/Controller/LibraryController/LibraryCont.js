@@ -56,22 +56,41 @@ router.get("/Library", middlewere_1.verifyToken, (req, res) => __awaiter(void 0,
     }
     const page = req.query.page ? parseInt(req.query.page, 10) : 1;
     const booksPerPage = parseInt(req.query.limit, 10);
-    const books = yield prisma.books.findMany({
-        where: { libraries: { every: { ListenerID: listener.ID } } },
+    //     const books = await prisma.books.findMany({
+    //     where:{libraries:{every:{ListenerID:listener.ID}}},
+    //     select: {
+    //         ID: true,
+    //         Author: { select: { AuthorFullName: true, ID: true } },
+    //         Title: true,
+    //         Narrator: true,
+    //         Files:{select:{Cover:true , Demo:true ,Audio:true}},
+    //         ListningTime:{
+    //             select:{
+    //                 ID:true,
+    //                 Time:true,
+    //                 Finished:true,
+    //                 BookID:true
+    //             }
+    //         }
+    //     },
+    //     skip: (page - 1) * booksPerPage,
+    //     take: booksPerPage
+    // });
+    const books = yield prisma.library.findFirst({
+        where: {
+            ListenerID: listener.ID,
+        },
         select: {
-            ID: true,
-            Author: { select: { AuthorFullName: true, ID: true } },
-            Title: true,
-            Narrator: true,
-            Files: { select: { Cover: true, Demo: true, Audio: true } },
-            listenTime: {
-                select: {
-                    ID: true,
-                    Time: true,
-                    Finished: true,
-                    BookID: true
-                }
-            }
+            book: { select: { ID: true,
+                    Author: { select: { AuthorFullName: true, ID: true } },
+                    Title: true,
+                    Summary: true,
+                    Narrator: true,
+                    Files: { select: { Cover: true, Demo: true, Audio: true } },
+                    ListningTime: { where: {
+                            ListenerID: listener.ID
+                        } }
+                } },
         },
         skip: (page - 1) * booksPerPage,
         take: booksPerPage

@@ -17,7 +17,7 @@ model Books {
   Narrator      String         @db.VarChar(250)
   NumberOfPages Int
   Language      Int
-  Summary       String         @db.VarChar(250)
+  Summary       String         @db.VarChar(2500)
   Files         Files[]
   Author        Author         @relation(fields: [AuthorID], references: [ID])
   Publisher     Publisher      @relation(fields: [PublisherID], references: [ID])
@@ -59,10 +59,10 @@ model Listeners {
 
 model ListningTime {
   ID         Int     @id @default(autoincrement())
-  Book       Books   @relation(fields: [BookID], references: [ID])
+  Book       Books   @relation(fields: [BookID], references: [ID], onDelete: Cascade)
   BookID     Int
   ListenerID Int
-  Time       String  @db.VarChar(50) //time spent on the book
+  Time       String  @db.VarChar(50)
   Finished   Boolean
 }
 
@@ -96,7 +96,7 @@ model BookRating {
   Rating     Int
   Review     String    @db.VarChar(250)
   RatingDate DateTime
-  Book       Books     @relation(fields: [BookID], references: [ID])
+  Book       Books     @relation(fields: [BookID], references: [ID], onDelete: Cascade)
   Reader     Listeners @relation(fields: [ReaderID], references: [ID])
 }
 

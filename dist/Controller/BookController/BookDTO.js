@@ -52,7 +52,7 @@ __decorate([
 ], NewBook.prototype, "Language", void 0);
 __decorate([
     (0, class_validator_1.IsString)({ message: "Must be a vaild type (String,Int,...)" }),
-    (0, class_validator_1.Length)(1, 250, { message: 'Summary is needed' }),
+    (0, class_validator_1.Length)(1, 2500, { message: 'Summary is needed' }),
     __metadata("design:type", String)
 ], NewBook.prototype, "Summary", void 0);
 __decorate([

@@ -53,9 +53,9 @@ exports.Books = [
         Summary: "This book is about Habits",
         PublisherName: "Publisher1",
         Category: "Science",
-        Cover: "http://localhost:3001/Media/png-transparent-habit-learning-education-student-mind-habits-text-class-people-thumbnail.png",
-        Audio: "http://localhost:3001/Media/Habits.m4a",
-        Demo: "http://localhost:3001/Media/Habit-Demo.m4a"
+        Cover: "Media/png-transparent-habit-learning-education-student-mind-habits-text-class-people-thumbnail.png",
+        Audio: "Media/Habits.m4a",
+        Demo: "Media/Habit-Demo.m4a"
     }
 ];
 //   ID            Int          @id @default(autoincrement())

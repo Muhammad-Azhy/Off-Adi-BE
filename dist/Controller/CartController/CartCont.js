@@ -65,6 +65,7 @@ router.put("/Cart/:BookID", middlewere_1.verifyToken, (req, res) => __awaiter(vo
                 }
             });
         }
+        ;
         const addedBook = yield prisma.cart.update({
             where: {
                 ID: +userCart.ID
@@ -128,6 +129,7 @@ router.post("/Cart/:BookID", middlewere_1.verifyToken, (req, res) => __awaiter(v
         return res.send("Book not found...");
     let library = yield prisma.library.findFirst({ where: { ListenerID: +ID } });
     if (!library) {
+        console.log("Library created");
         library = yield prisma.library.create({ data: { ListenerID: listener.ID } });
     }
     yield prisma.library.update({
@@ -139,7 +141,16 @@ router.post("/Cart/:BookID", middlewere_1.verifyToken, (req, res) => __awaiter(v
         }, data: {
             books: { disconnect: { ID: +BookID } }
         } });
-    res.send("Bought book");
+    console.log("Bought " + book.Title);
+    yield prisma.listningTime.create({
+        data: {
+            ListenerID: listener.ID,
+            BookID: +BookID,
+            Time: "0:00",
+            Finished: false
+        }
+    });
+    res.send("Bought " + book.Title);
 }));
 // router.post("/Cart", verifyToken , async (req,res)=>{
 //     const BookIDs = req.body.BookIDs;

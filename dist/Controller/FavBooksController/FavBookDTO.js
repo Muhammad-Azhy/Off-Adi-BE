@@ -14,17 +14,23 @@ const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 function FavBookMiddlewere(req, res, next) {
     return __awaiter(this, void 0, void 0, function* () {
-        const BookID = req.params.BookID;
-        const ID = req.params.ID;
-        if (!BookID || !ID)
-            return res.send("Missing URL parameters");
-        const book = yield prisma.books.findFirst({ where: { ID: +BookID } });
-        if (!book)
-            return res.send("Book doesn't exist...");
-        const listener = yield prisma.listeners.findFirst({ where: { ID: +ID } });
-        if (!listener)
-            return res.send('Listener not found...');
-        next();
+        try {
+            const BookID = req.params.BookID;
+            const decodedToken = req.decodedToken;
+            const ID = decodedToken.ID;
+            if (!BookID || !ID)
+                return res.send("Missing URL parameters");
+            const book = yield prisma.books.findFirst({ where: { ID: +BookID } });
+            if (!book)
+                return res.send("Book doesn't exist...");
+            const listener = yield prisma.listeners.findFirst({ where: { ID: +ID } });
+            if (!listener)
+                return res.send('Listener not found...');
+            next();
+        }
+        catch (e) {
+            res.send("Error while adding books");
+        }
     });
 }
 exports.FavBookMiddlewere = FavBookMiddlewere;

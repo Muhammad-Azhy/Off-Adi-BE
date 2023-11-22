@@ -46,28 +46,49 @@ router.get("/Library", verifyToken , async (req,res)=>{
     }
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const booksPerPage = parseInt(req.query.limit as string, 10); 
-    const books = await prisma.books.findMany({
-    where:{libraries:{every:{ListenerID:listener.ID}}},
-    select: {
-        ID: true,
-        Author: { select: { AuthorFullName: true, ID: true } },
-        Title: true,
-        Narrator: true,
-        Files:{select:{Cover:true , Demo:true ,Audio:true}},
-        listenTime:{
-            select:{
-                ID:true,
-                Time:true,
-                Finished:true,
-                BookID:true
-            }
-        }
+//     const books = await prisma.books.findMany({
+//     where:{libraries:{every:{ListenerID:listener.ID}}},
+//     select: {
+//         ID: true,
+//         Author: { select: { AuthorFullName: true, ID: true } },
+//         Title: true,
+//         Narrator: true,
+//         Files:{select:{Cover:true , Demo:true ,Audio:true}},
+//         ListningTime:{
+//             select:{
+//                 ID:true,
+//                 Time:true,
+//                 Finished:true,
+//                 BookID:true
+//             }
+//         }
+//     },
+//     skip: (page - 1) * booksPerPage,
+//     take: booksPerPage
+// });
+const books = await prisma.library.findFirst({
+    where:{
+        ListenerID:listener.ID,
+
+    },
+    select:{
+        book:{select:
+            {ID:true,
+            Author: { select: { AuthorFullName: true, ID: true } },
+            Title: true,
+            Summary:true,
+            Narrator: true,
+            Files:{select:{Cover:true , Demo:true ,Audio:true}},
+            ListningTime:{where:{
+                ListenerID:listener.ID
+            }}
+    
+        }},
     },
     skip: (page - 1) * booksPerPage,
     take: booksPerPage
 });
-
-return res.send(books);
+return res.send(books)
 
 })
 
@@ -94,4 +115,4 @@ router.get("/Library/:BookID", verifyToken ,async (req,res) => {
         res.send(x)
     })
 })
-export default router
+export default router;

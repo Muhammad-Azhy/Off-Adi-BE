@@ -23,7 +23,7 @@ class NewBook {
     @IsNumber()
     Language:number
     @IsString({message:"Must be a vaild type (String,Int,...)"})
-    @Length(1, 250, { message: 'Summary is needed' })
+    @Length(1, 2500, { message: 'Summary is needed' })
     Summary:string
     @IsString()
     @Length(1, 250, { message: ' Categories are needed' })

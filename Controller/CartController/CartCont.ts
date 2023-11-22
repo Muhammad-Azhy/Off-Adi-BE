@@ -54,7 +54,8 @@ router.put("/Cart/:BookID", verifyToken ,async (req,res)=>{
             UserID:+myID
           }
         })
-    }
+    };
+   
     const addedBook = await prisma.cart.update({
       where: {
         ID: +userCart.ID
@@ -73,7 +74,7 @@ router.put("/Cart/:BookID", verifyToken ,async (req,res)=>{
     res.send(addedBook.books)
   } catch(err){console.log(err)}
     
-});
+})
 router.delete("/Cart/:BookID", verifyToken ,async (req,res)=>{
   const BookID = req.params.BookID;
      const decodedToken = (req as any).decodedToken;
@@ -103,7 +104,6 @@ router.delete("/Cart/:BookID", verifyToken ,async (req,res)=>{
     })
 })
 router.post("/Cart/:BookID", verifyToken , async (req,res)=>{
- 
     const BookID = req.params.BookID;
     const decodedToken = (req as any).decodedToken;
     const ID = decodedToken.ID
@@ -116,6 +116,7 @@ router.post("/Cart/:BookID", verifyToken , async (req,res)=>{
         return res.send("Book not found...")
     let library = await prisma.library.findFirst({where:{ListenerID:+ID}})
     if(!library){
+      console.log("Library created");
        library = await prisma.library.create({data:{ListenerID:listener.ID }})
     }
     await prisma.library.update({
@@ -127,7 +128,16 @@ router.post("/Cart/:BookID", verifyToken , async (req,res)=>{
     }, data:{
       books:{disconnect:{ID:+BookID}}
     }})
-    res.send("Bought book")
+    console.log("Bought "+book.Title)
+    await prisma.listningTime.create({
+      data:{
+        ListenerID:listener.ID,
+        BookID:+BookID,
+        Time:"0:00",
+        Finished:false
+      }
+    })
+    res.send("Bought "+book.Title)
 })
 // router.post("/Cart", verifyToken , async (req,res)=>{
 //     const BookIDs = req.body.BookIDs;

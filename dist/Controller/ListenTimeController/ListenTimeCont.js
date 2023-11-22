@@ -59,8 +59,13 @@ router.get("/ListenTime/:BookID", middlewere_1.verifyToken, (req, res) => __awai
             BookID: +BookID,
             ListenerID: myID
         } });
-    if (!ListenTime)
-        return res.send("You have no time on this book");
-    return res.send([ListenTime]);
+    if (!ListenTime) {
+        yield prisma.listningTime.create({
+            data: { Time: "0:00", BookID: +BookID, Finished: false, ListenerID: myID }
+        }).then(x => { return res.send(x); });
+    }
+    else {
+        return res.send([ListenTime]);
+    }
 }));
 exports.default = router;

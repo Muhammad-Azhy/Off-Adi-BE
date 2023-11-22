@@ -70,6 +70,7 @@ app.get("/GetAll", middlewere_1.verifyToken, (req, res) => __awaiter(void 0, voi
             Summary: true,
             Language: true,
             Narrator: true,
+            NumberOfPages: true,
             Files: {
                 select: { Cover: true, Audio: true, Demo: true }
             },
